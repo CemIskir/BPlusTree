@@ -12,16 +12,53 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	public static final int D = 2;
 
 	/**
-	 * TODO Search the value for a specific key
+	 * Searchs the value for a specific key
 	 * 
 	 * @param key
 	 * @return value
 	 */
 	public T search(K key) {
+      
+      int index = 0;
+      Node<K,T> current = root;
+      
+      while(!current.isLeafNode)
+      {
+         index = 0;
+         
+         //Traversing through the keys of the current node
+         for(K curkey : current.keys)
+         {
+            // curkey > key
+            if(curkey.compareTo(key) == 1)
+               break;
+            else
+               ++index;
+         }
+         
+         if(current.keys.size() > 0)
+            current = ((IndexNode<K,T>)current).children.get(index);         
+      }
+
+      //If given node is valid, and no error occured
+      if(current != root || current!=null)
+      {
+         //will be used for accessing the value
+         index = 0;
+         
+         for(K curkey : current.keys)
+         {
+            // curkey == key
+            if(curkey.compareTo(key) == 0)
+               return ((LeafNode<K,T>)curkey).values.get(index);
+            index++;
+         }        
+      }
+      
 		return null;
 	}
 
-	/**
+   /**
 	 * TODO Insert a key/value pair into the BPlusTree
 	 * 
 	 * @param key
