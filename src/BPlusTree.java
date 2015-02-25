@@ -1,4 +1,5 @@
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Map.Entry;
 
 /**
@@ -72,24 +73,107 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * TODO Split a leaf node and return the new right node and the splitting
 	 * key as an Entry<slitingKey, RightNode>
 	 * 
+	 * @author Cem
 	 * @param leaf
 	 * @return the key/node pair as an Entry
 	 */
+	//Cem-Splits the given leaf
 	public Entry<K, Node<K,T>> splitLeafNode(LeafNode<K,T> leaf) {
-
-		return null;
+	   if(leaf != null)
+	   {	
+	      /*keys and values that will be inserted to the new LeafNode*/
+         ArrayList<K> newKeys = new ArrayList<K>();
+         ArrayList<T> newValues = new ArrayList<T>();
+         
+	      //Insert into the specific position
+         int index = D;
+         //How many items to copy
+         int copyItems = leaf.keys.size() - D;
+         
+         while(copyItems > 0)
+         {
+            newValues.add(leaf.values.remove(index));
+            newKeys.add(leaf.keys.remove(index));
+            --copyItems;
+         }
+	      
+         //Creating the LeafNode
+         Node<K,T> newNode = new LeafNode<K,T>(newKeys, newValues);
+         newNode.isLeafNode = true;
+         
+         //Setting the previous and next values
+         LeafNode<K,T> next = leaf.nextLeaf;
+         
+         ((LeafNode<K,T>)newNode).nextLeaf = next;
+         ((LeafNode<K,T>)newNode).previousLeaf = leaf;
+         
+         if(next != null)
+            next.previousLeaf = ((LeafNode<K,T>)newNode);
+         leaf.nextLeaf = ((LeafNode<K,T>)newNode);
+         
+         /*RETURN THE ENTRY
+         Entry<K, Node<K,T>> retVal = new Entry<K, Node<K,T>>();
+         return new Entry<K, Node<K,T>>(newNode.keys.get(0),newNode);
+	      */
+	   }
+	   else
+	      return null;
+	   //ERASE
+	   return null;
+	   //ERASE
 	}
 
 	/**
 	 * TODO split an indexNode and return the new right node and the splitting
 	 * key as an Entry<slitingKey, RightNode>
 	 * 
+	 * @author Cem
 	 * @param index
 	 * @return new key/node pair as an Entry
 	 */
-	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index) {
-
-		return null;
+	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> indexLeaf) {/*
+      if(indexLeaf != null)
+      {  
+         //keys and children that will be inserted to the new LeafNode
+         ArrayList<K> newKeys = new ArrayList<K>();
+         ArrayList<T> newChilren = new ArrayList<T>();
+         
+         //Insert into the specific position
+         int index = D;
+         //How many items to copy
+         int copyItems = indexLeaf.keys.size() - D;
+         
+         while(copyItems > 0)
+         {
+            newValues.add(indexLeaf.children.remove(index));
+            newKeys.add(indexLeaf.keys.remove(index));
+            --copyItems;
+         }
+         
+         //Creating the LeafNode
+         Node<K,T> newNode = new LeafNode<K,T>(newKeys, newValues);
+         newNode.isLeafNode = true;
+         
+         //Setting the previous and next values
+         LeafNode<K,T> next = leaf.nextLeaf;
+         
+         ((LeafNode<K,T>)newNode).nextLeaf = next;
+         ((LeafNode<K,T>)newNode).previousLeaf = leaf;
+         
+         if(next != null)
+            next.previousLeaf = ((LeafNode<K,T>)newNode);
+         leaf.nextLeaf = ((LeafNode<K,T>)newNode);
+         
+         RETURN THE ENTRY
+         Entry<K, Node<K,T>> retVal = new Entry<K, Node<K,T>>();
+         return new Entry<K, Node<K,T>>(newNode.keys.get(0),newNode);
+         
+      }
+      else
+         return null;*/
+      //ERASE
+      return null;
+      //ERASE
 	}
 
 	/**
