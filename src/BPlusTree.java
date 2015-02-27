@@ -48,6 +48,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	/**
 	 * Searchs the value for a specific key
 	 * 
+	 * @author Cem
 	 * @param key
 	 * @return value
 	 */
@@ -57,16 +58,17 @@ public class BPlusTree<K extends Comparable<K>, T> {
       Node<K,T> current = searchLeaf(key);
 
       //If given node is valid, and no error occured
-      if(current != root || current!=null)
+      if(current!=null)
       {
          //will be used for accessing the value
          int index = 0;
          
          for(K curkey : current.keys)
          {
+            
             // curkey == key
             if(curkey.compareTo(key) == 0)
-               return ((LeafNode<K,T>)curkey).values.get(index);
+               return ((LeafNode<K,T>)current).values.get(index);
             index++;
          }        
       }
@@ -131,7 +133,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	
 	
    public void insertMe(K key, T value) {
-      
       int index = 0;
       Node<K,T> current = root, parent = root;
       ArrayList<Node<K,T>> parentNodes = new ArrayList<Node<K,T>>();
@@ -139,6 +140,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
       //Go till the leafNode
       while(!current.isLeafNode)
       {
+
          //PARENT NODE LOGIC
          //Appending the parent nodes
          if(parentNodes.size() == 0)
@@ -155,7 +157,10 @@ public class BPlusTree<K extends Comparable<K>, T> {
             parentNodes.add(current);
          }
          //
+
          
+         index = 0;
+
          //Traversing through the keys of the current node
          for(K curkey : current.keys)
          {
@@ -187,7 +192,13 @@ public class BPlusTree<K extends Comparable<K>, T> {
          //right child
          Node<K,T> rightPart = rightPartPair.getValue();
          
-         if(parentNodes != null)
+         
+    
+         
+         
+         
+         
+         if(parentNodes.size() > 0)
          {
             int number_of_parents = parentNodes.size();
 
@@ -253,7 +264,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	
 	
 	/**
-	 * TODO Split a leaf node and return the new right node and the splitting
+	 * Split a leaf node and return the new right node and the splitting
 	 * key as an Entry<slitingKey, RightNode>
 	 * 
 	 * @author Cem
@@ -275,8 +286,8 @@ public class BPlusTree<K extends Comparable<K>, T> {
          
          while(index < copyItems)
          {
-            newValues.add(leaf.values.remove(index));
-            newKeys.add(leaf.keys.remove(index));
+            newValues.add(leaf.values.remove(D));
+            newKeys.add(leaf.keys.remove(D));
             ++index;
          }
 	      
@@ -302,7 +313,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	}
 
 	/**
-	 * TODO split an indexNode and return the new right node and the splitting
+	 * split an indexNode and return the new right node and the splitting
 	 * key as an Entry<slitingKey, RightNode>
 	 * 
 	 * @author Cem
@@ -323,11 +334,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
          
          while(index < copyItems)
          {
-            newChildren.add(indexLeaf.children.remove(index));
-            newKeys.add(indexLeaf.keys.remove(index));
+            newChildren.add(indexLeaf.children.remove(D+1));
+            newKeys.add(indexLeaf.keys.remove(D+1));
             ++index;
          }
-         newChildren.add(indexLeaf.children.remove(index));
+         newChildren.add(indexLeaf.children.remove(D+1));
          
          //Creating the LeafNode
          Node<K,T> newNode = new IndexNode<K,T>(newKeys, newChildren);
