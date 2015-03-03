@@ -25,12 +25,13 @@ public class Tests {
 		
 		
 		assertEquals(correct, test);
-/*
-		tree.delete('a');
 
+		tree.delete('a');
+		
 		test = Utils.outputTree(tree);
+		System.out.println(test);
 		correct = "@e/@%%[(b,b);(c,c);(d,d);]#[(e,e);(f,f);(g,g);]$%%";
-    assertEquals(correct, test);*/
+    assertEquals(correct, test);
 
 	}
 
@@ -49,15 +50,15 @@ public class Tests {
     String test = Utils.outputTree(tree);
     String correct = "@10/@%%@5/8/@@12/14/@%%[(2,2);(4,4);]#[(5,5);(7,7);]#[(8,8);(9,9);]$[(10,10);(11,11);]#[(12,12);(13,13);]#[(14,14);(15,15);(16,16);]$%%";
     assertEquals(test, correct);
-/*
+
     tree.delete(2);
     test = Utils.outputTree(tree);
     correct = "@8/10/12/14/@%%[(4,4);(5,5);(7,7);]#[(8,8);(9,9);]#[(10,10);(11,11);]#[(12,12);(13,13);]#[(14,14);(15,15);(16,16);]$%%";
     assertEquals(test, correct);
-*/
+
   }
 	
-	/*
+	
 	// testing proper leaf node merging behaviour
 	@Test
 	public void testDeleteLeafNodeMerge() {
@@ -68,16 +69,23 @@ public class Tests {
     }
 		BPlusTree<Integer, String> tree = new BPlusTree<Integer, String>();
 		Utils.bulkInsert(tree, testNumbers, testNumberStrings);
+		String test;
+		test = Utils.outputTree(tree);
+		System.out.println(test);
 
 		tree.delete(6);
+		test = Utils.outputTree(tree);
+		System.out.println(test);
 		tree.delete(7);
+		test = Utils.outputTree(tree);
+		System.out.println(test);
 		tree.delete(8);
-		String test = Utils.outputTree(tree);
+		test = Utils.outputTree(tree);
 		Utils.printTree(tree);
 
 		String result = "[(2,2);(3,3);(4,4);(5,5);]$%%";
 		assertEquals(result, test);
-	}*/
+	}
 	
 	
 	//Testing appropriate depth and node invariants on a big tree

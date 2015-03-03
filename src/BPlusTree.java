@@ -29,7 +29,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
          for(K curkey : current.keys)
          {
             // curkey > key
-            if(curkey.compareTo(key) == 1)
+            if(curkey.compareTo(key) > 0)
                break;
             else
                ++index;
@@ -352,6 +352,265 @@ public class BPlusTree<K extends Comparable<K>, T> {
       else
          return null;
 	}
+	
+	//Helper method to get sibling. It gets left sibling by default, right if left doesn't exist
+	private Node<K,T> getSibling(Node<K,T> current, IndexNode<K,T> parent){
+		
+		int index = parent.children.indexOf(current);
+		if(index == 0){
+			return parent.children.get(index+1);
+		}
+		else{
+			return parent.children.get(index - 1);
+		}
+	}
+	
+	
+	
+	
+	private Node<K,T> delete_recur(IndexNode<K,T> parent, Node<K,T> cur_node, K Key, Node<K,T> oldchild){
+		
+		if(!cur_node.isLeafNode){
+			//Handle Non-Leaf case here
+			IndexNode<K,T> N= (IndexNode<K,T>) cur_node;
+			
+			//Find pointer to the choose subtree
+			int i;
+			for(i=0; i < cur_node.keys.size();i++)
+			{
+				if(Key.compareTo(cur_node.keys.get(i)) < 0 || i > cur_node.keys.size())
+				{
+					break;
+				}
+					
+			}
+			
+			//recursive delete
+			oldchild = delete_recur(N, N.children.get(i),Key,oldchild);
+			
+			//usual case - child not deleted
+			if(oldchild == null)
+				return null; //delete doesn't go further
+			else {
+				//discard childnode from N
+				if(parent == null && N.keys.size()==0){
+					N.children.remove(oldchild);
+					this.root = N.children.get(0);
+					return null;
+					
+				}
+				N.keys.remove(N.children.indexOf(oldchild)-1);
+				N.children.remove(oldchild);
+				if(parent == null && N.keys.size()==0){
+					this.root = N.children.get(0);
+					return null;		
+				}
+				if(!N.isUnderflowed()){
+					return null;
+				}
+				else{
+					
+				if(parent != null){
+					IndexNode<K,T> Insibling = (IndexNode<K,T>)getSibling(N,parent);
+					int num_child_N = N.children.size();
+					int num_child_sibling = Insibling.children.size();
+					int child_split = (num_child_N + num_child_sibling)/2;
+					int parent_key_index;
+					
+					//Check if there is room for merge
+					if(Insibling.keys.size()+N.keys.size() < 2*D)
+					{ //Merge
+						
+						
+						if(parent.children.indexOf(N) > parent.children.indexOf(Insibling)){
+							//Node on left is Insibling
+							
+							oldchild = parent.children.get(parent.children.indexOf(N));
+							
+							//pull splitting key from parent down onto node on left
+							Insibling.keys.add(parent.keys.remove(parent.children.indexOf(N)-1));
+							
+							//move all entries from right node to node on left
+							Insibling.keys.addAll(N.keys);
+							Insibling.children.addAll(N.children);
+							
+							//Discard empty Node
+							N.keys.clear();
+							N.children.clear();
+							
+						}
+						else{
+							//Node on left is N
+							
+							oldchild = parent.children.get(parent.children.indexOf(Insibling));
+							
+							//pull splitting key from parent down onto node on left
+							N.keys.add(parent.keys.remove(parent.children.indexOf(Insibling)-1));
+							
+							//move all entries from right node to node on left
+							N.keys.addAll(Insibling.keys);
+							N.children.addAll(Insibling.children);
+							
+							//Discard empty Node
+							Insibling.keys.clear();
+							Insibling.children.clear();
+						}
+					
+						return oldchild;
+					}
+					else{
+						//Redistribute
+						
+						if(parent.children.indexOf(N) > parent.children.indexOf(Insibling)){
+							//redistribute from left to right through parent
+							
+							
+							while(Insibling.children.size() > child_split){
+								N.children.add(0,Insibling.children.remove(Insibling.children.size()-1));
+							}
+							
+							parent_key_index = parent.children.indexOf(Insibling)-1;
+							N.keys.add(0,parent.keys.get(parent_key_index));
+							while(Insibling.keys.size() > D+1){
+								N.keys.add(0,Insibling.keys.remove(Insibling.keys.size()-1));
+							}
+							parent.keys.set(parent_key_index,Insibling.keys.remove(Insibling.keys.size()-1));
+							
+						}
+						else{
+							//redistribute from right to left through parent
+							while(Insibling.children.size() > child_split){
+								N.children.add(Insibling.children.remove(0));
+							}
+							parent_key_index = parent.children.indexOf(Insibling)-1;
+							N.keys.add(parent.keys.get(parent_key_index));
+							while(Insibling.keys.size() > D+1){
+								N.keys.add(Insibling.keys.remove(0));
+							}
+							
+							parent.keys.set(parent_key_index,Insibling.keys.remove(0));
+							
+						}
+						
+					return null;
+					}
+				}
+			return null;	
+				}
+				
+				
+			}
+			
+		}
+		else{
+			//Handle Leaf-Node case here
+			LeafNode<K,T> L = (LeafNode<K,T>)cur_node;
+			int key_index = L.keys.indexOf(Key);
+			L.keys.remove(key_index);
+			L.values.remove(key_index);
+			
+			
+			if(!L.isUnderflowed())
+			{
+				//usual case
+				
+				return null;
+			}
+			else{
+				//Handle leaf underflow
+				
+				//get a sibling of L
+				LeafNode<K,T> Leafsibling = (LeafNode<K,T>)getSibling(L,parent);
+				
+				//Check if there is room for merge
+				if(Leafsibling.keys.size()+L.keys.size() <= 2*D)
+				{ //Merge
+					
+					
+					
+					if(parent.children.indexOf(L) > parent.children.indexOf(Leafsibling)){
+						//Node on left is Leafsibling
+						oldchild = parent.children.get(parent.children.indexOf(L));	
+						
+						//move all entries from right node to node on left
+						Leafsibling.keys.addAll(L.keys);
+						Leafsibling.values.addAll(L.values);
+						
+						//Discard empty Node and adjust sibling pointers
+						L.keys.clear();
+						L.values.clear();
+						Leafsibling.nextLeaf = L.nextLeaf;
+						if(L.nextLeaf != null){
+							L.nextLeaf.previousLeaf = Leafsibling;
+						}
+
+						
+					}
+					else{
+						//Node on left is L
+						
+						oldchild = parent.children.get(parent.children.indexOf(Leafsibling));
+						
+						
+						//move all entries from right node to node on left
+						L.keys.addAll(Leafsibling.keys);
+						L.values.addAll(Leafsibling.values);
+						
+						//Discard empty Node  and adjust sibling pointers
+						Leafsibling.keys.clear();
+						Leafsibling.values.clear();
+						L.nextLeaf = Leafsibling.nextLeaf;
+						if(Leafsibling.nextLeaf != null){
+							Leafsibling.nextLeaf.previousLeaf = L;
+						}
+					}
+				
+				return oldchild;			
+				}
+				else{
+					//Redistribute
+					
+					int half = (L.keys.size()+ Leafsibling.keys.size())/2;
+					
+					//redistribute evenly
+					while(L.keys.size() < half){
+						
+						//when L is on the left
+						if(parent.children.indexOf(L) < parent.children.indexOf(Leafsibling)){
+							L.keys.add(Leafsibling.keys.remove(0));
+							L.values.add(Leafsibling.values.remove(0));
+						}
+						else{
+						 //L is on right
+							L.keys.add(0,Leafsibling.keys.remove(Leafsibling.keys.size()-1));
+							L.values.add(0,Leafsibling.values.remove(Leafsibling.values.size()-1));
+						}
+						
+					}
+					
+					//Find entry in parent to node on right
+					int indexR;
+					if(parent.children.indexOf(L) < parent.children.indexOf(Leafsibling)){
+						indexR = parent.children.indexOf(Leafsibling);
+					}
+					else{
+						indexR = parent.children.indexOf(L);
+					}
+					
+					
+					//replace key value in parent by new low-key value
+					parent.keys.set(indexR-1,parent.children.get(indexR).keys.get(0));
+					
+					return null;
+				}
+				
+			}
+			
+			
+		}
+	
+		
+	}
 
 	/**
 	 * TODO Delete a key/value pair from this B+Tree
@@ -359,6 +618,39 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param key
 	 */
 	public void delete(K key) {
+		
+		if(search(key) != null){
+			//Delete only when a Key has a particular value
+			if(root.isLeafNode){
+				
+				LeafNode<K,T> L = (LeafNode<K,T>)root;
+				int key_index = L.keys.indexOf(key);
+				L.keys.remove(key_index);
+				L.values.remove(key_index);
+				
+			
+			}
+			else{
+				
+				IndexNode<K,T> N = (IndexNode<K,T>)root;
+				/*
+				int i;
+				for(i=0; i < N.keys.size();i++)
+				{
+					if(key.compareTo(N.keys.get(i)) < 0 || i > N.keys.size())
+					{
+						break;
+					}
+						
+				}
+				*/
+				delete_recur(null,N,key,null);
+				/*if(N.children.size() ==0){
+					//C
+				}*/
+			}
+		}
+		
 
 	}
 
