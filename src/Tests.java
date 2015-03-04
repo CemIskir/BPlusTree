@@ -2,12 +2,115 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.junit.Test;
 
 public class Tests {
 
+   /*
+    * Tests insertion and deletion when no index node existed(all nodes are leafnode)
+    * */
+   @Test
+   public void custom1(){
+      Character alphabet[] = new Character[] { 'c','a'};
+      String alphabetStrings[] = new String[alphabet.length];
+      for (int i = 0; i < alphabet.length; i++) {
+        alphabetStrings[i] = (alphabet[i]).toString();
+      }
+       BPlusTree<Character, String> tree = new BPlusTree<Character, String>();
+       Utils.bulkInsert(tree, alphabet, alphabetStrings);
+
+       String test = Utils.outputTree(tree);
+       String correct = "[(a,a);(c,c);]$%%";
+       
+       assertEquals(correct, test);
+
+       tree.delete('a');
+       tree.delete('b');
+       tree.delete('c');
+       test = Utils.outputTree(tree);
+       correct = "[]$%%";  
+       assertEquals(correct, test);
+
+       tree.insert(new Character('a'),"a");
+       tree.insert(new Character('b'),"b");
+       tree.insert(new Character('c'),"c");
+       test = Utils.outputTree(tree);
+       correct = "[(a,a);(b,b);(c,c);]$%%"; 
+       assertEquals(correct, test);       
+   }
+   
+   /*
+    * just one index node
+    * */
+   @Test
+   public void custom2(){
+      Character alphabet[] = new Character[] { 'a','b','z','m','e','n','f','c','p'};
+      String alphabetStrings[] = new String[alphabet.length];
+      for (int i = 0; i < alphabet.length; i++) {
+        alphabetStrings[i] = (alphabet[i]).toString();
+      }
+       BPlusTree<Character, String> tree = new BPlusTree<Character, String>();
+       Utils.bulkInsert(tree, alphabet, alphabetStrings);
+
+       String test = Utils.outputTree(tree);
+       String correct = "@e/m/@%%[(a,a);(b,b);(c,c);]#[(e,e);(f,f);]#[(m,m);(n,n);(p,p);(z,z);]$%%";     
+       assertEquals(correct, test);
+       
+       /*Search test*/
+       for(Character k:alphabet)
+          tree.search(k);
+       
+       tree.search(' ');
+       
+       /*
+        * DELETE FROM LEFT CHILD       
+       tree.delete('a');
+       tree.delete('b');
+       test = Utils.outputTree(tree);
+       correct = "@m/@%%[(c,c);(e,e);(f,f);]#[(m,m);(n,n);(p,p);(z,z);]$%%";  
+       assertEquals(correct, test);
+        */
+       
+       /*
+        * DELETE FROM MIDDLE CHILD     
+       tree.delete('a');
+       tree.delete('f');
+       test = Utils.outputTree(tree);
+       correct = "@m/@%%[(b,b);(c,c);(e,e);]#[(m,m);(n,n);(p,p);(z,z);]$%%";  
+       assertEquals(correct, test);
+        */
+
+       /*
+        * DELETE FROM RIGHT CHILD  */     
+       tree.delete('n');
+       tree.delete('z');
+       tree.delete('p');
+       test = Utils.outputTree(tree);
+       correct = "@e/@%%[(a,a);(b,b);(c,c);]#[(e,e);(f,f);(m,m);]$%%";  
+       assertEquals(correct, test);
+        
+       
+       for(Character k:alphabet)
+          tree.delete(k);
+       test = Utils.outputTree(tree);
+       correct = "[]$%%";  
+       assertEquals(correct, test);
+
+       
+       /*Search test in empty btree*/
+       for(Character k:alphabet)
+          tree.search(k);
+       
+       tree.search(' ');
+       
+       //Check insertion after removing all elements
+       tree.insert(new Character('a'),"a");
+       test = Utils.outputTree(tree);
+       correct = "[(a,a);]$%%"; 
+       assertEquals(correct, test);       
+   }
+   
   // add some nodes, see if it comes out right, delete one, see if it's right
 	@Test
 	public void testHybrid1() {
@@ -29,9 +132,8 @@ public class Tests {
 		tree.delete('a');
 		
 		test = Utils.outputTree(tree);
-		System.out.println(test);
 		correct = "@e/@%%[(b,b);(c,c);(d,d);]#[(e,e);(f,f);(g,g);]$%%";
-    assertEquals(correct, test);
+		assertEquals(correct, test);
 
 	}
 
@@ -69,19 +171,12 @@ public class Tests {
     }
 		BPlusTree<Integer, String> tree = new BPlusTree<Integer, String>();
 		Utils.bulkInsert(tree, testNumbers, testNumberStrings);
+		
 		String test;
-		test = Utils.outputTree(tree);
-		System.out.println(test);
-
 		tree.delete(6);
-		test = Utils.outputTree(tree);
-		System.out.println(test);
 		tree.delete(7);
-		test = Utils.outputTree(tree);
-		System.out.println(test);
 		tree.delete(8);
 		test = Utils.outputTree(tree);
-		Utils.printTree(tree);
 
 		String result = "[(2,2);(3,3);(4,4);(5,5);]$%%";
 		assertEquals(result, test);

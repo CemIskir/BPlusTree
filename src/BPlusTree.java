@@ -1,6 +1,8 @@
+/*
+ * This B+ Tree Solution is written by Cem Iskir, and Sairam Sanapureddy
+ * */
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -65,7 +67,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
          
          for(K curkey : current.keys)
          {
-            
             // curkey == key
             if(curkey.compareTo(key) == 0)
                return ((LeafNode<K,T>)current).values.get(index);
@@ -106,7 +107,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
       for(K curkey : current.keys)
       {
          // curkey > key
-         if(curkey.compareTo(key) == 1)
+         if(curkey.compareTo(key) > 0)
             break;
          else
             ++index;
@@ -122,7 +123,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	      for(K curkey : current.keys)
 	      {
 	         // curkey > key
-	         if(curkey.compareTo(key) == 1)
+	         if(curkey.compareTo(key) > 0)
 	            break;
 	         else
 	            ++index;
@@ -134,7 +135,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	
    public void insertMe(K key, T value) {
       int index = 0;
-      Node<K,T> current = root, parent = root;
+      Node<K,T> current = root;
       ArrayList<Node<K,T>> parentNodes = new ArrayList<Node<K,T>>();
       
       //Go till the leafNode
@@ -156,26 +157,21 @@ public class BPlusTree<K extends Comparable<K>, T> {
                parentNodes.clear();
             parentNodes.add(current);
          }
-         //
 
-         
          index = 0;
 
          //Traversing through the keys of the current node
          for(K curkey : current.keys)
          {
             // curkey > key
-            if(curkey.compareTo(key) == 1)
+            if(curkey.compareTo(key) > 0)
                break;
             else
                ++index;
          }
          
          if(current.keys.size() > 0)
-         {
-            parent = current;
             current = ((IndexNode<K,T>)current).children.get(index);
-         }
       }
       
       addSortedToKeyOrValue(current,key,value);
@@ -193,11 +189,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
          Node<K,T> rightPart = rightPartPair.getValue();
          
          
-    
-         
-         
-         
-         
          if(parentNodes.size() > 0)
          {
             int number_of_parents = parentNodes.size();
@@ -205,8 +196,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
             while(number_of_parents > 0)
             {
 
-               
-//!!!!!        
                //Current parent
                leftPart = parentNodes.get(number_of_parents-1);
                
@@ -252,10 +241,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
             Node<K,T> indexRoot = new IndexNode<K, T>(middlekey, leftPart, rightPart);
             root = indexRoot;
          }
-         
-//check update root case
-         
-         
       }
    }
 
@@ -379,10 +364,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 			for(i=0; i < cur_node.keys.size();i++)
 			{
 				if(Key.compareTo(cur_node.keys.get(i)) < 0 || i > cur_node.keys.size())
-				{
 					break;
-				}
-					
 			}
 			
 			//recursive delete
@@ -397,14 +379,16 @@ public class BPlusTree<K extends Comparable<K>, T> {
 					N.children.remove(oldchild);
 					this.root = N.children.get(0);
 					return null;
-					
 				}
+				
 				N.keys.remove(N.children.indexOf(oldchild)-1);
 				N.children.remove(oldchild);
+				
 				if(parent == null && N.keys.size()==0){
 					this.root = N.children.get(0);
 					return null;		
 				}
+				
 				if(!N.isUnderflowed()){
 					return null;
 				}
@@ -491,15 +475,14 @@ public class BPlusTree<K extends Comparable<K>, T> {
 							parent.keys.set(parent_key_index,Insibling.keys.remove(0));
 							
 						}
-						
-					return null;
+
+						return null;
 					}
 				}
-			return null;	
-				}
 				
-				
+				return null;	
 			}
+		}
 			
 		}
 		else{
@@ -513,7 +496,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
 			if(!L.isUnderflowed())
 			{
 				//usual case
-				
 				return null;
 			}
 			else{
@@ -525,8 +507,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				//Check if there is room for merge
 				if(Leafsibling.keys.size()+L.keys.size() <= 2*D)
 				{ //Merge
-					
-					
 					
 					if(parent.children.indexOf(L) > parent.children.indexOf(Leafsibling)){
 						//Node on left is Leafsibling
@@ -543,14 +523,10 @@ public class BPlusTree<K extends Comparable<K>, T> {
 						if(L.nextLeaf != null){
 							L.nextLeaf.previousLeaf = Leafsibling;
 						}
-
-						
 					}
 					else{
 						//Node on left is L
-						
 						oldchild = parent.children.get(parent.children.indexOf(Leafsibling));
-						
 						
 						//move all entries from right node to node on left
 						L.keys.addAll(Leafsibling.keys);
@@ -564,12 +540,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
 							Leafsibling.nextLeaf.previousLeaf = L;
 						}
 					}
-				
-				return oldchild;			
+					return oldchild;			
+			
 				}
 				else{
 					//Redistribute
-					
 					int half = (L.keys.size()+ Leafsibling.keys.size())/2;
 					
 					//redistribute evenly
@@ -590,12 +565,10 @@ public class BPlusTree<K extends Comparable<K>, T> {
 					
 					//Find entry in parent to node on right
 					int indexR;
-					if(parent.children.indexOf(L) < parent.children.indexOf(Leafsibling)){
+					if(parent.children.indexOf(L) < parent.children.indexOf(Leafsibling))
 						indexR = parent.children.indexOf(Leafsibling);
-					}
-					else{
+					else
 						indexR = parent.children.indexOf(L);
-					}
 					
 					
 					//replace key value in parent by new low-key value
@@ -606,10 +579,8 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				
 			}
 			
-			
 		}
 	
-		
 	}
 
 	/**
@@ -628,26 +599,10 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				L.keys.remove(key_index);
 				L.values.remove(key_index);
 				
-			
 			}
 			else{
-				
 				IndexNode<K,T> N = (IndexNode<K,T>)root;
-				/*
-				int i;
-				for(i=0; i < N.keys.size();i++)
-				{
-					if(key.compareTo(N.keys.get(i)) < 0 || i > N.keys.size())
-					{
-						break;
-					}
-						
-				}
-				*/
 				delete_recur(null,N,key,null);
-				/*if(N.children.size() ==0){
-					//C
-				}*/
 			}
 		}
 		
